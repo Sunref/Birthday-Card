@@ -1,13 +1,58 @@
 #include "animation.h"
 #include "../include/config.h"
 #include <math.h>
+#include <string.h>
+#include <stdio.h>
+
+// Maximum length for messages
+#define MAX_MESSAGE_LENGTH 256
+
+// Structure to hold messages
+typedef struct {
+    char main[MAX_MESSAGE_LENGTH];
+    char sub[MAX_MESSAGE_LENGTH];
+    char third[MAX_MESSAGE_LENGTH];
+    bool loaded;
+} Messages;
+
+// Static messages container
+static Messages messages = {
+    .main = MAIN_MESSAGE,    // Default message if file not found
+    .sub = SUB_MESSAGE,      // Default message if file not found
+    .third = THIRD_MESSAGE,  // Default message if file not found
+    .loaded = false
+};
+
+// Load messages from file
+static void LoadMessages() {
+    if (!messages.loaded) {
+        FILE* configFile = fopen("messages.txt", "r");
+        if (configFile != NULL) {
+            // Read messages
+            if (fgets(messages.main, sizeof(messages.main), configFile) != NULL) {
+                messages.main[strcspn(messages.main, "\n")] = 0;  // Remove newline
+            }
+            if (fgets(messages.sub, sizeof(messages.sub), configFile) != NULL) {
+                messages.sub[strcspn(messages.sub, "\n")] = 0;  // Remove newline
+            }
+            if (fgets(messages.third, sizeof(messages.third), configFile) != NULL) {
+                messages.third[strcspn(messages.third, "\n")] = 0;  // Remove newline
+            }
+            fclose(configFile);
+        }
+        messages.loaded = true;
+    }
+}
 
 // Draw birthday message with animated color effects
 void DrawAnimatedText(float time) {
+    // Load messages if not already loaded
+    LoadMessages();
+
     // Calculate text widths for centering
-    int textWidth = MeasureText(MAIN_MESSAGE, MAIN_FONT_SIZE);
-    int textWidth2 = MeasureText(SUB_MESSAGE, SUB_FONT_SIZE);
-    int textWidth3 = MeasureText(THIRD_MESSAGE, THIRD_FONT_SIZE);
+    int textWidth = MeasureText(messages.main, MAIN_FONT_SIZE);
+    int textWidth2 = MeasureText(messages.sub, SUB_FONT_SIZE);
+    int textWidth3 = MeasureText(messages.third, THIRD_FONT_SIZE);
 
     // Generate pulsating colors based on time
     Color textColor = (Color){
@@ -33,7 +78,7 @@ void DrawAnimatedText(float time) {
 
     // Draw main message with shadow
     DrawText(
-        MAIN_MESSAGE,
+        messages.main,
         SCREEN_WIDTH/2 - textWidth/2 + 3,
         SCREEN_HEIGHT/2 - 30 + 3,
         MAIN_FONT_SIZE,
@@ -41,7 +86,7 @@ void DrawAnimatedText(float time) {
     );
 
     DrawText(
-        MAIN_MESSAGE,
+        messages.main,
         SCREEN_WIDTH/2 - textWidth/2,
         SCREEN_HEIGHT/2 - 30,
         MAIN_FONT_SIZE,
@@ -50,7 +95,7 @@ void DrawAnimatedText(float time) {
 
     // Draw second message with shadow
     DrawText(
-        SUB_MESSAGE,
+        messages.sub,
         SCREEN_WIDTH/2 - textWidth2/2 + 2,
         SCREEN_HEIGHT/2 + 40 + 2,
         SUB_FONT_SIZE,
@@ -58,7 +103,7 @@ void DrawAnimatedText(float time) {
     );
 
     DrawText(
-        SUB_MESSAGE,
+        messages.sub,
         SCREEN_WIDTH/2 - textWidth2/2,
         SCREEN_HEIGHT/2 + 40,
         SUB_FONT_SIZE,
@@ -67,7 +112,7 @@ void DrawAnimatedText(float time) {
 
     // Draw third message with shadow
     DrawText(
-        THIRD_MESSAGE,
+        messages.third,
         SCREEN_WIDTH/2 - textWidth3/2 + 2,
         SCREEN_HEIGHT/2 + 80 + 2,
         THIRD_FONT_SIZE,
@@ -75,7 +120,7 @@ void DrawAnimatedText(float time) {
     );
 
     DrawText(
-        THIRD_MESSAGE,
+        messages.third,
         SCREEN_WIDTH/2 - textWidth3/2,
         SCREEN_HEIGHT/2 + 80,
         THIRD_FONT_SIZE,
